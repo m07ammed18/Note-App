@@ -1,16 +1,47 @@
 import { PenSquareIcon, Trash2Icon } from "lucide-react";
 import { Link } from "react-router";
 import { formatDate } from "../libs/utils";
+import api from "../libs/axios";
+import toast from "react-hot-toast";
 
 interface NoteCardProps {
-  note: { _id: string ,
-    title: string,
-    content: string,
-    createdAt : string
-  };
+  note: { _id: string; title: string; content: string; createdAt: string };
+
+  setNotes: React.Dispatch<
+    React.SetStateAction<
+      { _id: string; title: string; content: string; createdAt: string }[]
+    >
+  >;
 }
 
-function NoteCard({ note }: NoteCardProps) {
+function NoteCard({ note, setNotes }: NoteCardProps) {
+  const handleDelete = async (
+    e: { preventDefault: () => void },
+    id: string
+  ) => {
+    e.preventDefault();
+
+    if (!window.confirm("Are you sure you want to delete this note?")) return;
+
+    try {
+      await api.delete(`/notes/${id}`);
+      toast.success("Note deleted successfully! ");
+      setNotes(
+        (
+          prev: {
+            _id: string;
+            title: string;
+            content: string;
+            createdAt: string;
+          }[]
+        ) => prev.filter((note) => note._id !== id)
+      );
+    } catch (error) {
+      console.log("Error in handleDelete", error);
+      toast.error("Failed to delete note");
+    }
+  };
+
   return (
     <Link
       to={`/note/${note._id}`}
@@ -25,7 +56,10 @@ function NoteCard({ note }: NoteCardProps) {
           </span>
           <div className="flex items-center gap-1">
             <PenSquareIcon className="size-4" />
-            <button className="btn btn-ghost btn-sx text-error">
+            <button
+              onClick={(e) => handleDelete(e, note._id)}
+              className="btn btn-ghost btn-sx text-error"
+            >
               <Trash2Icon className="size-4" />
             </button>
           </div>

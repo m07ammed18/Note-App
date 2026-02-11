@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import RateLimitedUI from "../components/RateLimitedUI";
 import toast from "react-hot-toast";
 import NoteCard from "../components/NoteCard";
+import NotesNoteFound from "../components/NotesNoteFound";
+import api from "../libs/axios";
 
 interface Note {
   _id: string;
@@ -21,7 +22,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const res = await axios.get("http://localhost:5001/api/notes");
+        const res = await api.get("/notes");
         console.log(res.data);
         setNotes(res.data);
         setIsRateLimited(false);
@@ -53,10 +54,12 @@ const HomePage: React.FC = () => {
           </div>
         )}
 
+        {notes.length === 0 && !isRateLimited && <NotesNoteFound />}
+
         {notes.length > 0 && !isRateLimited && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {notes.map((note) => (
-              <NoteCard key={note._id} note={note}  />
+              <NoteCard key={note._id} note={note} setNotes={setNotes} />
             ))}
           </div>
         )}
